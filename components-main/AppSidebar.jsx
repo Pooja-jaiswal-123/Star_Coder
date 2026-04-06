@@ -17,6 +17,7 @@ import {
   X,
   TextQuote,
   LogIn,
+  LayoutTemplate, // Naya icon add kiya hai
 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { useUser } from "@/app/provider";
@@ -81,6 +82,12 @@ const AppSidebar = () => {
       label: "Blog Generator",
       icon: <TextQuote className="w-5 h-5" />,
       href: "/blog",
+    },
+    // Ye raha apka naya menu item
+    {
+      label: "Front Page Generator",
+      icon: <LayoutTemplate className="w-5 h-5" />,
+      href: "/front-page",
     },
   ];
 
