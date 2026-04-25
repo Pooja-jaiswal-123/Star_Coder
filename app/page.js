@@ -1,116 +1,182 @@
 "use client";
 
 import React from 'react';
-import { Sparkles, ArrowRight, PlayCircle, BookOpen, Lightbulb, Zap } from 'lucide-react';
+import { 
+  ArrowRight, 
+  Video, 
+  FileText, 
+  Target, 
+  BarChart3, 
+  ShieldCheck, 
+  Play,
+  Zap,
+  Star,
+  Mic,
+  Settings,
+  Circle,
+  MoreHorizontal
+} from 'lucide-react';
 
 export default function Home() {
   return (
-    // 'w-full' ensures content fills the remaining space from Layout.js
-    <div className="w-full font-sans text-slate-800 animate-in fade-in duration-700">
+    <div className="w-full bg-white text-slate-900 font-sans min-h-screen selection:bg-blue-100 relative overflow-hidden px-6 md:px-12 py-10">
       
-      {/* NOTE: Yahan se <aside> tag hata diya gaya hai kyunki 
-         layout.js mein sidebar pehle se hi fixed hai.
-      */}
+      {/* --- 1. GRAPH PAPER BACKGROUND (BLUEPRINT STYLE) --- */}
+      <div 
+        className="absolute inset-0 z-0 opacity-[0.05] pointer-events-none" 
+        style={{ 
+          backgroundImage: `
+            linear-gradient(#000 1px, transparent 1px), 
+            linear-gradient(90deg, #000 1px, transparent 1px),
+            linear-gradient(#000 0.5px, transparent 0.5px), 
+            linear-gradient(90deg, #000 0.5px, transparent 0.5px)
+          `,
+          backgroundSize: '100px 100px, 100px 100px, 20px 20px, 20px 20px'
+        }} 
+      />
 
-      {/* --- MAIN CONTENT WRAPPER --- */}
-      <div className="max-w-7xl mx-auto">
-        
-        {/* 1. THE LIGHT POSTER */}
-        <div className="relative w-full bg-gradient-to-br from-indigo-50 via-white to-blue-50 rounded-[2.5rem] p-8 md:p-14 border border-indigo-100/50 shadow-sm mb-10 overflow-hidden group">
+      <div className="relative z-10">
+        {/* --- 2. HERO SECTION: BOLD & CATCHY --- */}
+        <section className="max-w-4xl mb-24 animate-in fade-in slide-in-from-bottom-5 duration-1000">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 text-blue-600 text-[10px] font-black uppercase tracking-[0.25em] mb-8 shadow-sm">
+            <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse" /> AI Protocol Active
+          </div>
           
-          {/* Subtle Decorative Shapes */}
-          <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-200/20 rounded-full blur-[80px] -mr-20 -mt-20 group-hover:bg-indigo-300/20 transition-colors duration-700"></div>
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-200/20 rounded-full blur-[60px] -ml-12 -mb-12"></div>
+          <h1 className="text-6xl md:text-8xl font-black tracking-tighter text-slate-900 mb-8 leading-[0.9]">
+            Optimize <br />
+            <span className="text-blue-600">Your Future.</span>
+          </h1>
+          
+          <p className="text-xl text-slate-500 max-w-xl mb-12 leading-relaxed font-medium">
+            The engineering standard for high-stakes career moves. Practice with proprietary AI agents and secure your place in the 1%.
+          </p>
 
-          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-10">
-            <div className="max-w-xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-indigo-100 text-indigo-700 text-[10px] font-black mb-6 uppercase tracking-[0.2em]">
-                <Sparkles size={12} className="animate-pulse" />
-                AI-Driven Career Excellence
+          <div className="flex flex-wrap gap-5">
+            <button className="bg-slate-900 text-white px-10 py-5 rounded-2xl font-bold text-sm hover:bg-blue-600 transition-all shadow-2xl shadow-blue-900/20 flex items-center gap-3 group active:scale-95">
+              Launch Simulator <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+            </button>
+            <button className="px-10 py-5 bg-white border border-slate-200 rounded-2xl font-bold text-sm text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
+              View Analytics
+            </button>
+          </div>
+        </section>
+
+        {/* --- 3. THE REFINED VIDEO INTERFACE (WINDOW STYLE) --- */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 max-w-7xl">
+          
+          <div className="lg:col-span-8 group relative">
+            {/* Outer Glow Effect */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-[3.5rem] blur-xl opacity-50 group-hover:opacity-100 transition duration-1000"></div>
+            
+            <div className="relative bg-white border border-slate-200 rounded-[3rem] p-4 md:p-6 shadow-xl transition-all duration-500">
+              
+              {/* Browser/Window Style Header */}
+              <div className="flex items-center justify-between px-6 py-4 mb-6 bg-slate-50 rounded-2xl border border-slate-100">
+                 <div className="flex items-center gap-2">
+                   <Circle size={10} fill="#f87171" className="text-red-400" />
+                   <Circle size={10} fill="#fbbf24" className="text-amber-400" />
+                   <Circle size={10} fill="#34d399" className="text-emerald-400" />
+                   <span className="ml-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Live Session — Agent_Alpha</span>
+                 </div>
+                 <MoreHorizontal size={16} className="text-slate-300" />
               </div>
-              
-              <h1 className="text-4xl md:text-5xl font-black mb-6 tracking-tight text-slate-900 leading-[1.1]">
-                Elevate your <br />
-                <span className="text-indigo-600">Professional Identity.</span>
-              </h1>
-              
-              <p className="text-slate-500 text-base md:text-lg leading-relaxed mb-8 max-w-md font-medium">
-                Welcome back! Let's turn your career goals into reality. 
-                What would you like to master today?
-              </p>
-              
-              <div className="flex gap-4">
-                <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest transition shadow-xl shadow-indigo-100 active:scale-95 flex items-center gap-3">
-                  Get Started <ArrowRight size={16} />
-                </button>
+
+              {/* Video Content Window (Rounded Window) */}
+              <div className="relative aspect-video rounded-[2.5rem] overflow-hidden shadow-2xl bg-slate-100 border-2 border-white ring-1 ring-slate-200">
+                 {/* Image Window (Instead of simple rectangle) */}
+                 <img 
+                    src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&q=80" 
+                    alt="AI Interviewer"
+                    className="absolute inset-0 w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-1000 scale-105 group-hover:scale-100"
+                 />
+                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
+                 
+                 {/* Floating Play Control */}
+                 <div className="absolute inset-0 flex items-center justify-center">
+                   <div className="w-20 h-20 bg-white/20 backdrop-blur-xl rounded-full flex items-center justify-center border border-white/30 group-hover:scale-110 transition-all duration-500 cursor-pointer shadow-2xl">
+                     <Play size={28} className="text-white ml-1" fill="white" />
+                   </div>
+                 </div>
+
+                 {/* Interactive Dashboard Overlay */}
+                 <div className="absolute bottom-6 inset-x-6 flex justify-between items-end">
+                    <div className="bg-slate-900/80 backdrop-blur-xl border border-white/10 p-5 rounded-[2rem] text-white w-64 shadow-2xl">
+                       <div className="flex justify-between items-center mb-3">
+                         <p className="text-[9px] font-black uppercase tracking-widest text-blue-400">Communication Flow</p>
+                         <span className="text-[10px] font-black">9.4</span>
+                       </div>
+                       <div className="flex gap-1 h-8 items-end mb-1">
+                          {[0.4, 0.8, 0.5, 0.9, 0.7, 0.3, 0.6, 0.8, 0.4].map((h, i) => (
+                            <div key={i} className="flex-1 bg-blue-500/40 rounded-t-sm" style={{ height: `${h * 100}%` }} />
+                          ))}
+                       </div>
+                    </div>
+
+                    <div className="flex gap-4">
+                       <div className="w-14 h-14 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center text-white hover:bg-white hover:text-slate-900 transition-all cursor-pointer">
+                          <Mic size={22} />
+                       </div>
+                       <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-xl hover:bg-blue-500 transition-all cursor-pointer ring-4 ring-blue-600/20">
+                          <ShieldCheck size={22} />
+                       </div>
+                    </div>
+                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Visual Element */}
-            <div className="hidden lg:block relative">
-               <div className="absolute inset-0 bg-indigo-400 blur-3xl opacity-20 animate-pulse"></div>
-               <div className="relative bg-white p-8 rounded-[2rem] border border-indigo-50 shadow-2xl transform rotate-3 hover:rotate-0 transition-transform duration-500 cursor-pointer">
-                  <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200">
-                    <Zap size={32} className="text-white fill-white" />
-                  </div>
+          {/* SIDE PANEL: ANALYTICS PREVIEW */}
+          <div className="lg:col-span-4 flex flex-col gap-6">
+            <div className="flex-1 bg-slate-950 rounded-[3.5rem] p-10 text-white relative overflow-hidden group border border-slate-800 shadow-2xl">
+               <div className="absolute -top-10 -right-10 w-40 h-40 bg-blue-600/20 rounded-full blur-3xl" />
+               <Star className="text-blue-500 mb-8 animate-pulse" size={32} fill="currentColor" />
+               <h3 className="text-2xl font-black mb-2 tracking-tight">Performance <br/> Analysis</h3>
+               <p className="text-slate-500 text-sm font-medium mb-10 leading-relaxed italic">"Technically sound, but needs more emphasis on soft-leadership skills."</p>
+               
+               <div className="space-y-6">
+                  {['Body Language', 'Knowledge', 'Clarity'].map((label, idx) => (
+                    <div key={label} className="space-y-2">
+                       <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-400">
+                          <span>{label}</span>
+                          <span className="text-blue-500">{95 - (idx * 5)}%</span>
+                       </div>
+                       <div className="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
+                          <div className="h-full bg-blue-600 transition-all duration-1000" style={{ width: `${95 - (idx * 5)}%` }} />
+                       </div>
+                    </div>
+                  ))}
                </div>
             </div>
           </div>
         </div>
 
-        {/* 2. DAILY CONTENT SECTION */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-          
-          {/* Action Card */}
-          <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm hover:shadow-xl hover:border-indigo-100 transition-all group">
-            <div className="flex items-center gap-4 mb-5">
-              <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                <PlayCircle size={24} />
-              </div>
-              <h3 className="font-black text-slate-900 text-xl tracking-tight">Today's Practice</h3>
-            </div>
-            <p className="text-slate-500 text-sm mb-8 leading-relaxed font-medium">
-              Experience a 5-minute rapid-fire interview round specifically 
-              tailored for your target job role.
-            </p>
-            <button className="w-full py-4 bg-slate-950 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-indigo-600 transition shadow-lg active:scale-95">
-              Launch AI Practice
-            </button>
-          </div>
-
-          {/* Wisdom Card */}
-          <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm flex flex-col justify-center relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-8 opacity-5">
-              <Lightbulb size={120} className="text-amber-600" />
-            </div>
-            <div className="p-3 bg-amber-50 text-amber-600 rounded-xl w-fit mb-6">
-              <Lightbulb size={24} />
-            </div>
-            <p className="text-lg md:text-xl font-bold text-slate-800 italic leading-relaxed relative z-10 tracking-tight">
-              "Focus on <span className="text-indigo-600">'How'</span> you solved a problem, not just 'What' you did. 
-              Impact matters more than activity."
-            </p>
-            <p className="mt-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-              — Career Coach Insight
-            </p>
-          </div>
-        </div>
-
-        {/* 3. QUICK NAVIGATION */}
-        <div className="pt-4">
-          <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6 ml-1">Quick Actions</h4>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {['Mock Sessions', 'Resume Vault', 'Skill Gap', 'Pathways'].map((item) => (
-              <div key={item} className="p-4 bg-white border border-slate-100 rounded-[1.5rem] hover:border-indigo-200 hover:shadow-lg transition-all cursor-pointer flex items-center gap-4 group">
-                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center group-hover:bg-indigo-600 transition-all">
-                  <BookOpen size={18} className="text-slate-400 group-hover:text-white transition" />
+        {/* --- 4. THE TOOLKIT (CLEAN GRID) --- */}
+        <section className="py-24 max-w-7xl">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+            {[
+              { title: 'Resume Kernel', icon: <FileText size={24}/>, desc: 'Deep-scan your resume against top-tier tech rubrics.' },
+              { title: 'Smart Roadmap', icon: <Target size={24}/>, desc: 'AI-generated strategy to reach senior levels faster.' },
+              { title: 'Growth Engine', icon: <BarChart3 size={24}/>, desc: 'Visual daily logs of your evolution and fluency.' },
+            ].map((item, i) => (
+              <div key={i} className="group p-10 bg-white/50 backdrop-blur-sm border border-slate-100 rounded-[2.5rem] hover:bg-white hover:shadow-2xl hover:shadow-blue-100/30 transition-all duration-500 cursor-pointer">
+                <div className="w-14 h-14 bg-white border border-slate-100 text-slate-300 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-blue-600 group-hover:text-white transition-all duration-500 shadow-sm">
+                  {item.icon}
                 </div>
-                <span className="font-black text-slate-600 text-[10px] uppercase tracking-widest group-hover:text-indigo-700 transition">{item}</span>
+                <h4 className="text-xl font-black mb-3 text-slate-900 tracking-tight">{item.title}</h4>
+                <p className="text-slate-500 text-sm leading-relaxed font-medium">{item.desc}</p>
               </div>
             ))}
           </div>
-        </div>
+        </section>
 
+        {/* --- 5. FOOTER --- */}
+        <footer className="pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 text-slate-400">
+          <p className="text-[9px] font-black uppercase tracking-[0.5em]">System.Core.Career-AI-2026</p>
+          <div className="flex gap-10">
+            <span className="text-[9px] font-black uppercase tracking-widest hover:text-blue-600 cursor-pointer transition-colors">Neural Hub</span>
+            <span className="text-[9px] font-black uppercase tracking-widest hover:text-blue-600 cursor-pointer transition-colors">Documentation</span>
+          </div>
+        </footer>
       </div>
     </div>
   );

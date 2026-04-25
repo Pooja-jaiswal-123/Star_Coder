@@ -26,7 +26,11 @@ export function InterviewSidebar() {
 
   const interviewOptions = [
     { name: "Dashboard", icon: LayoutDashboard, path: "/interview/dashboard" },
-    { name: "Scheduled Interview", icon: CalendarCheck, path: "/interview/scheduled" },
+    {
+      name: "Scheduled Interview",
+      icon: CalendarCheck,
+      path: "/interview/scheduled",
+    },
     { name: "All Interviews", icon: History, path: "/interview/all" },
     { name: "Billing", icon: CreditCard, path: "/interview/billing" },
     { name: "Settings", icon: Settings, path: "/interview/settings" },
@@ -40,11 +44,10 @@ export function InterviewSidebar() {
           <div className="w-8 h-8 bg-indigo-600 rounded flex items-center justify-center text-white font-bold">
             AI
           </div>
-          <span className="text-xl font-bold text-gray-800">
-            AI Interview
-          </span>
+          <span className="text-xl font-bold text-gray-800">AI Interview</span>
         </Link>
 
+        {/* Updated: Relative Path for New Interview */}
         <Link href="/interview/create-interview" className="w-full">
           <button className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white font-semibold py-2.5 px-4 rounded-xl shadow-md hover:bg-indigo-700 transition-all">
             <Plus size={20} />
@@ -70,7 +73,10 @@ export function InterviewSidebar() {
                         : "text-gray-600 hover:bg-gray-100"
                     }`}
                   >
-                    <Link href={option.path} className="flex items-center gap-3 w-full">
+                    <Link
+                      href={option.path}
+                      className="flex items-center gap-3 w-full"
+                    >
                       <option.icon size={22} />
                       <span>{option.name}</span>
                     </Link>
@@ -84,7 +90,10 @@ export function InterviewSidebar() {
 
       {/* FOOTER */}
       <SidebarFooter className="p-4 border-t">
-        <Link href="/dashboard" className="text-sm text-gray-500 hover:text-indigo-600">
+        <Link
+          href="/dashboard/analytics"
+          className="text-sm text-gray-500 hover:text-indigo-600"
+        >
           ← Back to Main Dashboard
         </Link>
       </SidebarFooter>

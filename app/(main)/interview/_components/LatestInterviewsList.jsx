@@ -3,8 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Video } from "lucide-react";
 import React, { useState } from "react";
-import Link from "next/link"; // ✅ Import Link
-
+import Link from "next/link";
 const LatestInterviewsList = () => {
   const [interviewsList] = useState([]);
 
