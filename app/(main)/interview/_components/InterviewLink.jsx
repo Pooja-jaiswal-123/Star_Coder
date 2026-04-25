@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -18,9 +18,17 @@ import {
 
 const InterviewLink = ({ interview_id, formData }) => {
   const [copied, setCopied] = useState(false);
+  const [origin, setOrigin] = useState("");
+
+  // ✅ FIX: Yeh component load hote hi automatically sahi URL utha lega (chahe localhost ho ya Vercel)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setOrigin(window.location.origin);
+    }
+  }, []);
 
   const GetInterviewUrl = () => {
-    return `${process.env.NEXT_PUBLIC_HOST_URL}/interview/${interview_id}`;
+    return `${origin}/interview/${interview_id}`;
   };
 
   const handleCopy = () => {
@@ -35,9 +43,9 @@ const InterviewLink = ({ interview_id, formData }) => {
     const body = `Hello,\n\nPlease attend the AI interview using this link: ${GetInterviewUrl()}\n\nBest regards,`;
     window.open(
       `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(
-        body
+        body,
       )}`,
-      "_blank"
+      "_blank",
     );
   };
 
@@ -84,13 +92,13 @@ const InterviewLink = ({ interview_id, formData }) => {
             type="text"
             value={GetInterviewUrl()}
             readOnly
-            className="text-sm bg-gray-100 border rounded-md px-3 py-2 w-full"
+            className="text-sm bg-gray-100 border rounded-md px-3 py-2 w-full focus:outline-none"
           />
 
           <Button
             size="sm"
             className={`text-xs px-3 h-10 w-full sm:w-auto ${
-              copied ? "bg-green-600 text-white" : ""
+              copied ? "bg-green-600 hover:bg-green-700 text-white" : ""
             }`}
             onClick={handleCopy}
           >
