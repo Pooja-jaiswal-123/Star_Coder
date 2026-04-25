@@ -14,7 +14,7 @@ import {
   UserCircle,
   Download,
 } from "lucide-react";
-import FeedbackPage from "./FeedbackPage";
+import FeedbackPage from "../feedback/page";
 
 const StartInterview = ({ candidateName }) => {
   const { interviewInfo } = useContext(InterviewDataContext);

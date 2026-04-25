@@ -147,7 +147,7 @@ const FeedbackPage = () => {
         {/* Footer Actions */}
         <div className="flex gap-3 pt-6">
           <Button
-            onClick={() => router.push("/dashboard")}
+            onClick={() => router.push("/interview/dashboard")}
             className="flex-1 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-[11px] h-10 font-bold tracking-wide"
           >
             Done & Return
