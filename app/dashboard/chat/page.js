@@ -1,166 +1,325 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { 
-  Bot, 
-  UserCircle, 
-  Send, 
-  Sparkles, 
-  RotateCcw, 
-  MoreHorizontal,
-  Paperclip
+import {
+  Bot,
+  ArrowUp,
+  Paperclip,
+  RefreshCcw
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 
 const AIChatBot = () => {
   const [input, setInput] = useState("");
+  const [selectedImage, setSelectedImage] = useState(null);
+
   const [messages, setMessages] = useState([
     {
-      id: 1,
-      role: "assistant",
-      content: "Hello Pooja! 👋 I'm your AI Career Coach. How can I help you with your interview prep or resume today?",
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    }
+      
+  id: 1,
+  role: "assistant",
+  content:
+    "Hello! I am your AI Career Coach. What would you like to talk about today? (Interview prep, Resume, or Career advice)",
+
+    },
   ]);
+
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef(null);
+  const fileInputRef = useRef(null);
 
-  // Auto scroll to bottom
+  // Auto scroll
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      scrollRef.current.scrollTo({
+        top: scrollRef.current.scrollHeight,
+        behavior: "smooth",
+      });
     }
   }, [messages, isTyping]);
 
+  const handleImageClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImageSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedImage(file);
+    }
+  };
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!input.trim()) return;
+
+    if ((!input.trim() && !selectedImage) || isTyping) return;
+
+    const userText = input.trim();
 
     const userMessage = {
       id: Date.now(),
       role: "user",
-      content: input,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      content: userText || "Image sent",
+      image: selectedImage ? URL.createObjectURL(selectedImage) : null,
     };
 
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
+    setSelectedImage(null);
     setIsTyping(true);
 
-    // Simulate AI Response
-    setTimeout(() => {
-      const aiResponse = {
-        id: Date.now() + 1,
-        role: "assistant",
-        content: "That's a great question! Based on your profile, I recommend focusing on your React projects. Would you like me to analyze a specific job description for you?",
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      setMessages((prev) => [...prev, aiResponse]);
+    const aiMessageId = Date.now() + 1;
+
+    const aiPlaceholder = {
+      id: aiMessageId,
+      role: "assistant",
+      content: "",
+    };
+
+    setMessages((prev) => [...prev, aiPlaceholder]);
+
+    try {
+      const response = await fetch(
+        "https://api.groq.com/openai/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_GROQ_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "llama-3.1-8b-instant",
+            messages: [
+              {
+                
+            role: "system",
+            content:
+                    "You are a helpful, smart AI Career Coach. Default language must be English. Only reply in Hindi if the user writes in Hindi. If the user writes in English, always reply in English. Do not mix Hindi and English unless the user does it first. CRITICAL: DO NOT use markdown formatting like **bold**  or *italics*. Use plain text only.",
+
+              },
+              ...messages.map((msg) => ({
+                role: msg.role,
+                content: msg.content,
+              })),
+              {
+                role: "user",
+                content: userText || "User uploaded an image",
+              },
+            ],
+            temperature: 0.7,
+            max_tokens: 2048,
+            stream: true,
+          }),
+        }
+      );
+
+      if (!response.ok) throw new Error("API response error");
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+
+      let buffer = "";
+      let completeResponse = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop();
+
+        for (let line of lines) {
+          line = line.trim();
+          if (!line || line === "data: [DONE]") continue;
+
+          if (line.startsWith("data: ")) {
+            const jsonStr = line.substring(6);
+
+            try {
+              const parsed = JSON.parse(jsonStr);
+              let content = parsed.choices[0]?.delta?.content || "";
+
+              if (content) {
+                content = content
+                  .replace(/\*\*/g, "")
+                  .replace(/\*/g, "");
+
+                completeResponse += content;
+
+                setMessages((prev) =>
+                  prev.map((msg) =>
+                    msg.id === aiMessageId
+                      ? { ...msg, content: completeResponse }
+                      : msg
+                  )
+                );
+
+                await new Promise((resolve) =>
+                  setTimeout(resolve, 35)
+                );
+              }
+            } catch (error) {
+              console.error("Parsing error ignored:", error);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Chat Error:", error);
+
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === aiMessageId
+            ? {
+                ...msg,
+                content:
+                  "Sorry, network issue hai. Please try again.",
+              }
+            : msg
+        )
+      );
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
+  };
+
+  const handleResetChat = () => {
+    setMessages([messages[0]]);
+    setSelectedImage(null);
   };
 
   return (
-    <div className="w-full h-[calc(100vh-120px)] flex flex-col font-sans animate-in fade-in duration-700">
-      
-      {/* 1. Chat Header */}
-      <div className="flex items-center justify-between bg-white p-5 rounded-t-[2rem] border border-gray-100 shadow-sm">
-        <div className="flex items-center gap-4">
-          <div className="relative">
-            <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-100">
-              <Bot className="text-white w-6 h-6" />
-            </div>
-            <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
-          </div>
-          <div>
-            <h2 className="text-lg font-black text-gray-800 tracking-tight uppercase">AI Coach</h2>
-            <p className="text-[10px] font-bold text-green-500 uppercase tracking-widest">Online & Ready to Help</p>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => setMessages([messages[0]])} className="p-2.5 text-gray-400 hover:bg-gray-50 rounded-xl transition-colors">
-            <RotateCcw className="w-5 h-5" />
-          </button>
-          <button className="p-2.5 text-gray-400 hover:bg-gray-50 rounded-xl transition-colors">
-            <MoreHorizontal className="w-5 h-5" />
-          </button>
-        </div>
+    <div className="w-full h-screen bg-white flex flex-col items-center font-sans">
+      {/* Header */}
+      <div className="w-full h-14 flex items-center justify-between px-4 text-gray-700 border-b border-gray-100 shrink-0">
+        <span className="font-semibold text-lg">AI Coach</span>
+
+        <button
+          onClick={handleResetChat}
+          className="p-2 hover:bg-gray-100 rounded-md transition-colors text-gray-500"
+          title="New Chat"
+        >
+          <RefreshCcw size={18} />
+        </button>
       </div>
 
-      {/* 2. Messages Area */}
-      <div 
+      {/* Messages Area */}
+      <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-50/50 scrollbar-hide"
+        className="flex-1 w-full max-w-3xl overflow-y-auto px-4 py-8 space-y-8 scrollbar-hide"
       >
-        <AnimatePresence>
-          {messages.map((msg) => (
-            <motion.div
-              key={msg.id}
-              initial={{ opacity: 0, y: 10, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-            >
-              <div className={`flex gap-3 max-w-[80%] ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
-                <div className={`w-8 h-8 rounded-lg shrink-0 flex items-center justify-center shadow-sm 
-                  ${msg.role === "assistant" ? "bg-indigo-600 text-white" : "bg-white text-gray-400 border border-gray-100"}`}>
-                  {msg.role === "assistant" ? <Bot size={16} /> : <UserCircle size={18} />}
-                </div>
-                <div>
-                  <div className={`p-4 rounded-[1.5rem] text-sm font-medium shadow-sm leading-relaxed
-                    ${msg.role === "user" 
-                      ? "bg-indigo-600 text-white rounded-tr-none" 
-                      : "bg-white text-gray-700 border border-gray-100 rounded-tl-none"}`}>
-                    {msg.content}
-                  </div>
-                  <p className={`text-[10px] mt-1.5 font-bold text-gray-400 uppercase tracking-tighter ${msg.role === "user" ? "text-right" : "text-left"}`}>
-                    {msg.time}
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-
-        {isTyping && (
-          <div className="flex justify-start">
-             <div className="bg-white px-4 py-3 rounded-2xl border border-gray-100 shadow-sm flex gap-1">
-                <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce"></span>
-                <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
-                <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.4s]"></span>
-             </div>
+        {/* This heading will disappear after user types */}
+        {messages.length === 1 && !input && (
+          <div className="text-center text-2xl font-medium text-gray-400 mt-10">
+            What’s on your mind today?
           </div>
         )}
+
+        {messages.map((msg) => (
+          <div
+            key={msg.id}
+            className={`flex w-full ${
+              msg.role === "user"
+                ? "justify-end"
+                : "justify-start"
+            }`}
+          >
+            {/* AI Message */}
+            {msg.role === "assistant" && (
+              <div className="flex gap-4 max-w-[90%]">
+                <div className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center shrink-0 mt-0.5">
+                  <Bot
+                    size={18}
+                    className="text-gray-700"
+                  />
+                </div>
+
+                <div className="text-[15px] leading-relaxed text-gray-800 whitespace-pre-wrap pt-1 font-mono sm:font-sans">
+                  {msg.content || (
+                    <span className="w-2 h-4 bg-black inline-block animate-pulse"></span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* User Message */}
+            {msg.role === "user" && (
+              <div className="bg-gray-100 px-5 py-3 rounded-3xl text-[15px] leading-relaxed text-gray-900 max-w-[80%]">
+                {msg.content}
+
+                {msg.image && (
+                  <img
+                    src={msg.image}
+                    alt="uploaded"
+                    className="mt-3 rounded-xl max-h-60"
+                  />
+                )}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
 
-      {/* 3. Input Area */}
-      <div className="p-5 bg-white rounded-b-[2rem] border-t border-gray-100">
-        <form onSubmit={handleSendMessage} className="relative flex items-center gap-3">
-          <button type="button" className="p-3 text-gray-400 hover:text-indigo-600 transition-colors">
-            <Paperclip className="w-5 h-5" />
-          </button>
-          <div className="relative flex-1">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Type your message here..."
-              className="w-full pl-5 pr-14 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-sm font-semibold"
-            />
-            <button 
-              type="submit"
-              disabled={!input.trim()}
-              className={`absolute right-2 top-1/2 -translate-y-1/2 p-2.5 rounded-xl transition-all active:scale-95
-                ${input.trim() ? "bg-indigo-600 text-white shadow-lg shadow-indigo-100" : "bg-gray-200 text-gray-400"}`}
-            >
-              <Send className="w-5 h-5" />
-            </button>
+      {/* Input Area */}
+      <div className="w-full max-w-3xl px-4 pb-6 pt-2 bg-white">
+        {selectedImage && (
+          <div className="mb-3 text-sm text-gray-600">
+            Selected: {selectedImage.name}
           </div>
+        )}
+
+        <form
+          onSubmit={handleSendMessage}
+          className="relative flex items-center bg-[#f4f4f4] rounded-[2rem] border border-transparent focus-within:border-gray-300 transition-colors"
+        >
+          {/* Hidden File Input */}
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            onChange={handleImageSelect}
+            className="hidden"
+          />
+
+          {/* Image Upload Button */}
+          <button
+            type="button"
+            onClick={handleImageClick}
+            className="absolute left-3 p-2 text-gray-500 hover:text-black transition-colors rounded-full"
+          >
+            <Paperclip size={20} />
+          </button>
+
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Message AI Coach..."
+            disabled={isTyping}
+            className="w-full bg-transparent py-4 pl-12 pr-14 outline-none text-[15px] text-black disabled:opacity-50 placeholder:text-gray-500"
+          />
+
+          <button
+            type="submit"
+            disabled={
+              (!input.trim() && !selectedImage) || isTyping
+            }
+            className={`absolute right-2 p-2 rounded-full transition-all flex items-center justify-center
+              ${
+                (input.trim() || selectedImage) &&
+                !isTyping
+                  ? "bg-black text-white hover:bg-gray-800"
+                  : "bg-gray-300 text-white"
+              }`}
+          >
+            <ArrowUp size={20} strokeWidth={2.5} />
+          </button>
         </form>
-        <p className="text-[10px] text-center mt-4 text-gray-400 font-bold uppercase tracking-[0.2em]">
-          <Sparkles className="inline w-3 h-3 mb-0.5 mr-1 text-indigo-400" /> Powered by Advanced AI
+
+        <p className="text-center text-xs text-gray-400 mt-3">
+          AI can make mistakes. Verify important career advice.
         </p>
       </div>
-
     </div>
   );
 };

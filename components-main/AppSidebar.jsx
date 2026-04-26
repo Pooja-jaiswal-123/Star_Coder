@@ -17,7 +17,7 @@ import {
   X,
   TextQuote,
   LogIn,
-  LayoutTemplate, // Naya icon add kiya hai
+  LayoutTemplate,
 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { useUser } from "@/app/provider";
@@ -83,11 +83,16 @@ const AppSidebar = () => {
       icon: <TextQuote className="w-5 h-5" />,
       href: "/blog",
     },
-    // Ye raha apka naya menu item
     {
       label: "Front Page Generator",
       icon: <LayoutTemplate className="w-5 h-5" />,
       href: "/front-page",
+    },
+    // Yeh raha apka naya AI Chatbot menu item sabse niche
+    {
+      label: "AI Chatbot",
+      icon: <Bot className="w-5 h-5" />,
+      href: "/dashboard/chat",
     },
   ];
 
