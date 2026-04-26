@@ -53,7 +53,6 @@ export async function POST(req) {
       return NextResponse.json({ success: false, error: 'Invalid phone number format. Use format like +91XXXXXXXXXX or 10-digit number' }, { status: 400 });
     }
 
-    // Validate phone number format more strictly
     if (!cleanNumber.match(/^\+\d{10,15}$/)) {
       return NextResponse.json({ success: false, error: 'Phone number must be in E.164 format (+countrycodeXXXXXXXXXX)' }, { status: 400 });
     }
@@ -63,12 +62,13 @@ export async function POST(req) {
 
     const payload = {
       phone_number: cleanNumber,
-      task: `You are Pooja Sharma, a Senior HR Recruiter at AI Coach Technologies. You are conducting a professional phone screening interview for a technical position. 
+      // Yahan Pooja Sharma ko badal kar HR Manager kar diya gaya hai
+      task: `You are an HR Manager at AI Coach Technologies. You are conducting a professional phone screening interview for a technical position. 
 
 Context about the candidate and role: ${backgroundContext}
 
 Interview Guidelines:
-- Introduce yourself professionally as HR from AI Coach Technologies
+- Introduce yourself professionally as HR Manager from AI Coach Technologies
 - Ask about their current role and experience
 - Inquire about technical skills relevant to the position
 - Discuss salary expectations and availability
@@ -77,7 +77,8 @@ Interview Guidelines:
 - End the call professionally when appropriate
 
 Be polite, professional, and thorough in your assessment.`,
-      first_sentence: `Hello ${candidateName}, this is Pooja Sharma calling from AI Coach Technologies. I'm conducting a phone screening for our technical position. How are you today?`,
+      // Yahan bhi first_sentence ko update kiya gaya hai
+      first_sentence: `Hello ${candidateName}, this is the HR Manager calling from AI Coach Technologies. I'm conducting a phone screening for our technical position. How are you today?`,
       voice: 'Josh',
       wait_for_greeting: true,
       record: true,
@@ -94,7 +95,6 @@ Be polite, professional, and thorough in your assessment.`,
       ...(encryptedKey ? { encrypted_key: encryptedKey } : {}),
     };
 
-    // Add timeout and retry logic
     let response;
     let data;
     let retryCount = 0;
@@ -106,7 +106,7 @@ Be polite, professional, and thorough in your assessment.`,
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(30000), // 30 second timeout
+          signal: AbortSignal.timeout(30000),
         });
 
         const text = await response.text();
@@ -116,12 +116,10 @@ Be polite, professional, and thorough in your assessment.`,
           data = { raw: text };
         }
 
-        // If successful or client error (not server error), break
         if (response.ok || (response.status >= 400 && response.status < 500)) {
           break;
         }
 
-        // If server error and we have retries left, wait and retry
         if (response.status >= 500 && retryCount < maxRetries) {
           console.log(`🔄 Server error (${response.status}), retrying in ${2 ** retryCount} seconds...`);
           await new Promise(resolve => setTimeout(resolve, 1000 * (2 ** retryCount)));

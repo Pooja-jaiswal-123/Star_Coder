@@ -4,7 +4,7 @@ import { QUESTIONS_PROMPT } from "@/lib/services/Constants";
 
 export async function POST(req) {
   try {
-    // ✅ SAFE BODY PARSE
+    // SAFE BODY PARSE
     let body;
 
     try {
@@ -25,7 +25,7 @@ export async function POST(req) {
       interviewType,
     } = body;
 
-    // ✅ VALIDATION
+    //  VALIDATION
     if (!jobPosition || !jobDescription || !duration) {
       return NextResponse.json(
         { error: "Missing required fields" },
@@ -69,7 +69,7 @@ Type: ${interviewType}
     let responseText =
       completion.choices?.[0]?.message?.content || "";
 
-    // ✅ remove markdown
+    //  remove markdown
     responseText = responseText
       .replace(/```json|```/g, "")
       .trim();
