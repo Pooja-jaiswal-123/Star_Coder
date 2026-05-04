@@ -7,7 +7,7 @@ const WelcomeContainer = () => {
   const { user } = useUser();
   return (
     <div className="bg-white p-5 rounded-2xl w-full shadow-md border border-gray-200 flex justify-between items-center">
-      {/* LEFT SIDE TEXT */}
+      {/* LEFT SIDE TEhoXT */}
       <div>
         <h2 className="text-lg font-bold">Welcome Back, {user?.name}</h2>
         <h2 className="text-gray-600 text-sm">

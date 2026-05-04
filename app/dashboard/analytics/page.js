@@ -145,7 +145,7 @@ const HomePage = () => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
         {[
-          { title: "Interview Prep", desc: "Practice with AI mock interviews.", icon: <MessageSquare />, color: "indigo", href: "/interview", btn: "Start Interview" },
+          { title: "Interview Prep", desc: "Practice with AI mock interviews.", icon: <MessageSquare />, color: "indigo", href: "/interview/dashboard", btn: "Start Interview" },
           { title: "Resume Builder", desc: "Create professional ATS resumes.", icon: <FileText />, color: "violet", href: "/resume", btn: "Build Resume" },
           { title: "Resume Analyzer", desc: "Scan resume against job desc.", icon: <Search />, color: "emerald", href: "/resume/analyze", btn: "Analyze Now" },
           { title: "Career Roadmap", desc: "Generate personalized learning path.", icon: <Map />, color: "amber", href: "/roadmap", btn: "View Path" }
