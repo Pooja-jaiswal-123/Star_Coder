@@ -13,10 +13,11 @@ import {
   MonitorUp,
   UserCircle,
   Download,
+  PhoneOff,
 } from "lucide-react";
 import FeedbackPage from "../feedback/page";
 
-const StartInterview = ({ candidateName }) => {
+const StartInterview = ({ candidateName = "Candidate" }) => {
   const { interviewInfo } = useContext(InterviewDataContext);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
@@ -29,6 +30,8 @@ const StartInterview = ({ candidateName }) => {
   const [status, setStatus] = useState("Waiting to start...");
   const [generatingFeedback, setGeneratingFeedback] = useState(false);
   const [feedback, setFeedback] = useState(null);
+
+  const [availableVoices, setAvailableVoices] = useState([]);
 
   // Control States
   const [interviewStarted, setInterviewStarted] = useState(false);
@@ -45,12 +48,24 @@ const StartInterview = ({ candidateName }) => {
   const transcriptRef = useRef("");
   const currentQuestionIndexRef = useRef(0);
   const questionAttemptRef = useRef(1);
+  const webcamStreamRef = useRef(null);
 
-  const silenceTimerRef = useRef(null); // Agar 10 sec tak kuch nahi bola
-  const pauseTimerRef = useRef(null); // Bolte bolte 5 sec ka pause liya
+  const silenceTimerRef = useRef(null);
+  const pauseTimerRef = useRef(null);
 
   const questions = interviewInfo?.interviewData?.questionList || [];
   const currentQuestion = questions[currentQuestionIndex];
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      const loadVoices = () => {
+        setAvailableVoices(window.speechSynthesis.getVoices());
+      };
+
+      loadVoices();
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+  }, []);
 
   useEffect(() => {
     transcriptRef.current = transcript;
@@ -61,10 +76,12 @@ const StartInterview = ({ candidateName }) => {
 
   // Webcam Setup
   useEffect(() => {
-    let stream;
     const enableWebcam = async () => {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+        });
+        webcamStreamRef.current = stream;
         if (videoRef.current) videoRef.current.srcObject = stream;
       } catch (err) {
         console.error("Camera error:", err);
@@ -72,12 +89,15 @@ const StartInterview = ({ candidateName }) => {
       }
     };
     if (isWebcamOn) enableWebcam();
+
     return () => {
-      if (stream) stream.getTracks().forEach((track) => track.stop());
+      if (webcamStreamRef.current) {
+        webcamStreamRef.current.getTracks().forEach((track) => track.stop());
+      }
     };
   }, [isWebcamOn]);
 
-  // Screen Share Setup - Force Current Tab preference
+  // Screen Share Setup
   const handleStartInterviewAndRecord = async () => {
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
@@ -105,7 +125,9 @@ const StartInterview = ({ candidateName }) => {
       };
 
       stream.getVideoTracks()[0].onended = () => {
-        mediaRecorder.stop();
+        if (mediaRecorderRef.current.state !== "inactive") {
+          mediaRecorder.stop();
+        }
       };
 
       mediaRecorder.start();
@@ -119,15 +141,37 @@ const StartInterview = ({ candidateName }) => {
     }
   };
 
-  // AI Speech Setup
   const speakText = (text, onEndCallback) => {
     if (!text) return;
+
     window.speechSynthesis.cancel();
     clearTimeout(silenceTimerRef.current);
     clearTimeout(pauseTimerRef.current);
 
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.9;
+    utterance.rate = 0.95;
+    utterance.pitch = 1.1;
+
+    let indianFemaleVoice = availableVoices.find(
+      (v) =>
+        (v.lang === "en-IN" || v.lang === "hi-IN") &&
+        !v.name.toLowerCase().includes("ravi") &&
+        !v.name.toLowerCase().includes("david"),
+    );
+
+    if (!indianFemaleVoice) {
+      indianFemaleVoice = availableVoices.find(
+        (v) =>
+          v.lang.startsWith("en") &&
+          (v.name.toLowerCase().includes("female") ||
+            v.name.toLowerCase().includes("zira") ||
+            v.name.toLowerCase().includes("samantha")),
+      );
+    }
+
+    if (indianFemaleVoice) {
+      utterance.voice = indianFemaleVoice;
+    }
 
     utterance.onstart = () => {
       setIsSpeaking(true);
@@ -139,10 +183,15 @@ const StartInterview = ({ candidateName }) => {
       if (onEndCallback) onEndCallback();
     };
 
+    utterance.onerror = (e) => {
+      console.error("Speech error:", e);
+      setIsSpeaking(false);
+      if (onEndCallback) onEndCallback();
+    };
+
     window.speechSynthesis.speak(utterance);
   };
 
-  // Intro Flow
   useEffect(() => {
     if (interviewStarted && !introPlayed && candidateName) {
       setTimeout(() => {
@@ -178,7 +227,6 @@ const StartInterview = ({ candidateName }) => {
 
   const autoStartMic = () => {
     startListening();
-    // 10 Seconds timer if user is completely silent initially
     silenceTimerRef.current = setTimeout(() => {
       if (!transcriptRef.current.trim()) {
         stopListening(false);
@@ -192,11 +240,11 @@ const StartInterview = ({ candidateName }) => {
       questionAttemptRef.current = 2;
       speakText(
         "I didn't hear you clearly. Let me repeat the question. " +
-          questions[currentQuestionIndexRef.current].question,
+          (questions[currentQuestionIndexRef.current]?.question || ""),
         autoStartMic,
       );
     } else {
-      handleAutoSubmitAnswer(true); // Force skip after 2 fails
+      handleAutoSubmitAnswer(true);
     }
   };
 
@@ -216,7 +264,7 @@ const StartInterview = ({ candidateName }) => {
 
     recognition.onstart = () => {
       setIsListening(true);
-      setStatus("Listening..."); // Changed to natural text
+      setStatus("Listening...");
     };
 
     recognition.onresult = (event) => {
@@ -234,7 +282,6 @@ const StartInterview = ({ candidateName }) => {
         setTranscript((prev) => prev + " " + currentTranscriptChunk);
       }
 
-      // NAYA TIMER: User chup hua toh exactly 5 seconds wait karega.
       pauseTimerRef.current = setTimeout(() => {
         if (transcriptRef.current.trim()) {
           stopListening(false);
@@ -253,14 +300,13 @@ const StartInterview = ({ candidateName }) => {
     clearTimeout(silenceTimerRef.current);
     clearTimeout(pauseTimerRef.current);
     setIsListening(false);
-    setStatus("Thinking..."); // Clean, natural status
+    setStatus("Thinking...");
 
     if (shouldSubmit) {
       handleAutoSubmitAnswer(false);
     }
   };
 
-  // --- SMART EVALUATION LOGIC (Hinglish Supported) ---
   const handleAutoSubmitAnswer = async (forceSubmit = false) => {
     clearTimeout(silenceTimerRef.current);
     clearTimeout(pauseTimerRef.current);
@@ -304,7 +350,7 @@ const StartInterview = ({ candidateName }) => {
       }
 
       if (skipKeywords.some((kw) => lowerAns.includes(kw))) {
-        // Automatically skips to next block below
+        // Skip
       } else {
         const wordCount = currentAns
           .split(" ")
@@ -320,7 +366,6 @@ const StartInterview = ({ candidateName }) => {
       }
     }
 
-    // Save Answer and Move to Next
     const newAnswer = {
       question: currentQ,
       answer: currentAns || "(Skipped/No answer)",
@@ -337,10 +382,43 @@ const StartInterview = ({ candidateName }) => {
     });
   };
 
+  // Hard Kill Logic For End Call
+  const handleEndCall = () => {
+    if (recognitionRef.current) recognitionRef.current.abort();
+
+    window.speechSynthesis.cancel();
+
+    clearTimeout(silenceTimerRef.current);
+    clearTimeout(pauseTimerRef.current);
+
+    setIsListening(false);
+    setIsSpeaking(false);
+
+    setIsWebcamOn(false);
+    if (webcamStreamRef.current) {
+      webcamStreamRef.current.getTracks().forEach((track) => track.stop());
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+
+    finishInterview(answers);
+  };
+
   const finishInterview = async (finalAnswers) => {
-    if (isRecordingScreen && mediaRecorderRef.current) {
+    if (
+      isRecordingScreen &&
+      mediaRecorderRef.current &&
+      mediaRecorderRef.current.state !== "inactive"
+    ) {
       mediaRecorderRef.current.stop();
     }
+
+    setIsWebcamOn(false);
+    if (webcamStreamRef.current) {
+      webcamStreamRef.current.getTracks().forEach((track) => track.stop());
+    }
+
     setStatus("Generating feedback...");
     setGeneratingFeedback(true);
     await generateFeedback(finalAnswers);
@@ -412,7 +490,7 @@ const StartInterview = ({ candidateName }) => {
           <div className="absolute top-4 right-4 z-50">
             <a
               href={recordingUrl}
-              download={`${candidateName.replace(" ", "_")}_Interview.webm`}
+              download={`${(candidateName || "Candidate").replace(/ /g, "_")}_Interview.webm`}
               className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full shadow-lg font-medium text-sm transition-all"
             >
               <Download className="w-4 h-4" /> Download Recording
@@ -493,8 +571,9 @@ const StartInterview = ({ candidateName }) => {
                 className={`absolute inset-0 bg-blue-400 rounded-full blur-2xl opacity-20 ${isSpeaking ? "animate-pulse scale-150" : "scale-100"} transition-all duration-700`}
               ></div>
               <div className="w-32 h-32 rounded-full flex items-center justify-center relative z-10 shadow-lg border-4 border-white bg-white overflow-hidden">
+                {/* ✅ YAHAN IMAGE PATH CHANGE KIYA HAI */}
                 <img
-                  src="/ai.png"
+                  src="/a1.png"
                   alt="AI Interviewer"
                   className="w-full h-full object-cover"
                 />
@@ -520,7 +599,7 @@ const StartInterview = ({ candidateName }) => {
 
         <div className="relative bg-black rounded-3xl overflow-hidden border border-gray-200 shadow-sm flex items-center justify-center">
           <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-medium text-white shadow-sm z-10 flex items-center gap-2">
-            {candidateName} (You)
+            {candidateName || "Candidate"} (You)
           </div>
 
           {isWebcamOn ? (
@@ -562,6 +641,16 @@ const StartInterview = ({ candidateName }) => {
             <MicOff className="w-6 h-6" />
           )}
         </div>
+
+        {interviewStarted && (
+          <button
+            onClick={handleEndCall}
+            className="w-14 h-14 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center shadow-md transition-all hover:scale-110 active:scale-95"
+            title="End Interview"
+          >
+            <PhoneOff className="w-6 h-6" />
+          </button>
+        )}
       </footer>
     </div>
   );

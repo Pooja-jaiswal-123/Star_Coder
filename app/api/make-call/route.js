@@ -62,7 +62,6 @@ export async function POST(req) {
 
     const payload = {
       phone_number: cleanNumber,
-      // Yahan Pooja Sharma ko badal kar HR Manager kar diya gaya hai
       task: `You are an HR Manager at AI Coach Technologies. You are conducting a professional phone screening interview for a technical position. 
 
 Context about the candidate and role: ${backgroundContext}
@@ -77,9 +76,11 @@ Interview Guidelines:
 - End the call professionally when appropriate
 
 Be polite, professional, and thorough in your assessment.`,
-      // Yahan bhi first_sentence ko update kiya gaya hai
       first_sentence: `Hello ${candidateName}, this is the HR Manager calling from AI Coach Technologies. I'm conducting a phone screening for our technical position. How are you today?`,
-      voice: 'Josh',
+      
+      // ✅ Yahan maine Standard Female Voice 'maya' set ki hai
+      voice: 'maya',
+      
       wait_for_greeting: true,
       record: true,
       reduce_latency: true,
@@ -140,12 +141,12 @@ Be polite, professional, and thorough in your assessment.`,
     }
 
     if (!response.ok) {
-      console.error('❌ Bland AI Error Details:', data);
+      console.error(' Bland AI Error Details:', data);
       const errorMessage = data?.message || data?.error || data?.raw || 'Bland AI rejected the call';
       return NextResponse.json({ success: false, error: errorMessage }, { status: response.status });
     }
 
-    console.log('✅ SUCCESS: Call Queued!', data);
+    console.log(' SUCCESS: Call Queued!', data);
     return NextResponse.json({ success: true, callId: data.call_id || data?.id || null, raw: data });
   } catch (error) {
     console.error('SERVER CRASH:', error);

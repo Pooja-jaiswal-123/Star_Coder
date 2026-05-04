@@ -60,7 +60,11 @@ const PhoneScreeningPage = () => {
       const response = await fetch("/api/make-call", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        // Added voice parameter for Indian Female Voice
+        body: JSON.stringify({
+          ...formData,
+          voice: "en-IN-female", // Aap apne backend provider ke hisaab se isko change kar sakte hain (e.g., "Kajal", "Aditi")
+        }),
       });
 
       const data = await response.json();
